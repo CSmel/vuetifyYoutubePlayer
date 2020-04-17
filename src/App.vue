@@ -1,28 +1,289 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <v-app id="inspire">
+    <v-content>
+      <v-container fluid>
+        <v-row>
+          <ContainerFavorite :update-artist="updateArtist"></ContainerFavorite>
+        </v-row>
+        <v-col>
+          <ContainerPlayer :page-token-url="pageTokenUrl"
+                           :judul="judul" :channel-title="channelTitle" :view-count="viewCount"
+                           :new-published-at="newPublishedAt" :likd="dislikeCount"
+                           :likc="likeCount" :desc="desc"></ContainerPlayer>
+          <container-playlist :play-video="playVideo" :channels_title="channels_title" :channels_name="channels_name"
+                              :video-list="videoList"></container-playlist>
+        </v-col>
+      </v-container>
+    </v-content>
+    <v-footer app fixed
+              class="font-weight-medium">
+      <video-player :event-target-index="eventTargetIndex" :youtube_det="youtube_det" :page-token-url="pageTokenUrl"
+                    :options="videoOptions"/>
+      <ContainerFooter></ContainerFooter>
+    </v-footer>
+  </v-app>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ContainerPlayer from "./components/ContainerPlayer";
+import ContainerPlaylist from "./components/ContainerPlaylist";
+import ContainerFavorite from "./components/ContainerFavorite";
+import ContainerFooter from "./components/ContainerFooter";
+import VideoPlayer from "./components/VideoPlayer.vue";
+
+import axios from "axios";
+//import videojs from 'video.js/dist/video.js'
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
+name: "App",
+components: {
+ContainerFooter,
+ContainerFavorite,
+ContainerPlayer,
+ContainerPlaylist,
+VideoPlayer
+},
+data() {
+return {
+eventTargetIndex: 1,
+pageToken: "",
+uploadsId: "",
+channels_title: "",
+channelTitle: "",
+channels_name: "808StateOfficial",
+channelsHref: "",
+thumbnailUrl: "",
+newPublishedAt: "",
+viewCount: "",
+likeCount: "",
+dislikeCount: "",
+desc: "",
+judul: "",
+pageTokenUrl: "",
+nextpageToken: '',
+chid: [],
+videoList: [],
+videoUploads: [],
+videoOptions: {
+autoplay: true,
+controls: true,
+sources: [
+{
+src:
+  "https://www.youtube.com/embed/g1rz_QXQt34",
+type: "video/youtube"
 }
-</script>
+]
+}
+};
+},
+mounted() {
+this.$nextTick(function () {
+this.connectYoutube();
+});
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+},
+methods: {
+connectYoutube() {
+//this.channels_name = "808StateOfficial"; //example
+this.channelsHref = "https://www.youtube.com/user/" + this.channels_name;
+this.channels_title = "jQuery plugin by @bachors";
+this.apikey = "AIzaSyChhn0kj1g-rFE69Gb-lRJgbjwtQyKkjp4"; //YOUR GOOGLE API KEY
+this.initUrl =
+  "https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=" +
+  this.channels_name +
+  "&key=" +
+  this.apikey;
+axios
+  .get(this.initUrl, {
+  crossDomain: true,
+  dataType: "json"
+  })
+  .then(response => {
+  this.videoUploads = response.data.items;
+  this.uploadsId =
+    response.data.items[0].contentDetails.relatedPlaylists.uploads;
+  this.chid = response.data.items[0].id;
+  this.pageToken = "";
+  //console.log(this.uploadsId);
+  this.youtube_video_list();
+  });
+},
+youtube_video_list() {
+axios
+  .get(
+    "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=" +
+    this.uploadsId +
+    "&key=" +
+    this.apikey + "&pageToken="
+    // this.pageToken
+  )
+  .then(response => {
+  this.nextpageToken = response.data.nextPageToken;
+
+  this.videoList = response.data.items;
+  this.videoId = response.data.items[0].snippet.resourceId.videoId;
+  this.pageTokenUrl = "https://www.youtube.com/embed/g1rz_QXQt34" + this.videoId;
+  this.youtube_det(response.data);
+
+  });
+},
+
+youtube_det() {
+axios
+  .get(
+    "https://www.googleapis.com/youtube/v3/videos?id=" +
+    this.videoId +
+    "&key=" +
+    this.apikey +
+    "&part=snippet,statistics"
+  )
+  .then(response => {
+  this.viewCount = response.data.items[0].statistics.viewCount;
+  this.likeCount = response.data.items[0].statistics.likeCount;
+  this.dislikeCount = response.data.items[0].statistics.dislikeCount;
+  this.publishedAt = response.data.items[0].snippet.publishedAt;
+  //this.category = ""
+  this.judul = response.data.items[0].snippet.localized.title;
+  this.desc = response.data.items[0].snippet.localized.description;
+  this.channelTitle = response.data.items[0].snippet.channelTitle;
+  this.addCommas(this.viewCount);
+  this.addCommas(this.likeCount);
+  this.addCommas(this.dislikeCount);
+  this.urlify(this.desc).replace(/\n/g, "<br />");
+  this.newPublishedAt = this.timeSince(
+    new Date(this.publishedAt).getTime()
+  );
+  });
+},
+playVideo(event) {
+if (this.activeLink) {
+this.activeLink.classList.remove("vid-active");
 }
+let els = document.querySelectorAll('.play.vid-active');
+this.playClassTotal = document.querySelectorAll('.play');
+this.eventTargetIndex = Array.from(this.playClassTotal).indexOf(event.target) + 1;
+for (let i = 0; i < els.length; i++) {
+els[i].classList.remove('vid-active')
+}
+this.activeLink = event.target;
+this.activeLink.previousElementSibling.classList.add("vid-active");
+this.videoAttr = event.target.previousElementSibling.getAttribute("data-vvv");
+this.videoId = event.target.previousElementSibling.getAttribute("data-vvv");
+this.videoIndex = event.target.getAttribute("index");
+this.pageTokenUrl = "https://www.youtube.com/embed/" + this.videoAttr;
+document.getElementById("vid1_youtube_api").src = this.pageTokenUrl + "?controls=0&modestbranding=1&rel=0&showinfo=0&loop=0&fs=0&hl=en&iv_load_policy=1&enablejsapi=1&origin=http%3A%2F%2Flocalhost%3A8080&widgetid=1";
+this.youtube_det();
+},
+updateArtist(event) {
+this.channels_name = event.currentTarget.getAttribute('artistChannelName');
+this.connectYoutube()
+
+},
+addCommas(nStr) {
+nStr += "";
+this.x = nStr.split(".");
+this.x1 = this.x[0];
+this.x2 = this.x.length > 1 ? "." + this.x[1] : "";
+this.rgx = /(\d+)(\d{3})/;
+while (this.rgx.test(this.x1)) {
+this.x1 = this.x1.replace(this.rgx, "$1" + "," + "$2");
+this.viewCount = this.x1 + this.x2;
+}
+},
+timeSince(a) {
+let s = Math.floor((new Date() - a) / 1000),
+  i = Math.floor(s / 31536000);
+if (i > 1) {
+return i + " years ago";
+}
+i = Math.floor(s / 2592000);
+if (i > 1) {
+return i + " months ago";
+}
+i = Math.floor(s / 86400);
+if (i > 1) {
+return i + " days ago";
+}
+i = Math.floor(s / 3600);
+if (i > 1) {
+return i + " hours ago";
+}
+i = Math.floor(s / 60);
+if (i > 1) {
+return i + " minutes ago";
+}
+return Math.floor(s) + " seconds ago";
+},
+urlify(b) {
+let c = /(https?:\/\/[^\s]+)/g;
+return b.replace(c, function (a) {
+return (
+  '<a href="' + a + '" rel="nofollow" target="_BLANK">' + a + "</a>"
+);
+});
+},
+
+
+},
+
+};
+</script>
+<style src='video.js/dist/video-js.css'>
+  /* global styles */
+</style>
+<style>
+
+  @import url('https://fonts.googleapis.com/css?family=family=Roboto:100,300,400,500,700,900|Material+Icons');
+  button {
+    height: 200px;
+    width: 300px;
+    background-color: blue;
+  }
+
+  .vjs-default-skin.vjs-paused .vjs-big-play-button {
+    display: none;
+  }
+
+  .vjs-default-skin.vjs-paused .vjs-control-bar {
+    display: block;
+  }
+
+  #app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+    margin-top: 60px;
+  }
+
+  /* Custom your style */
+
+  html,
+  body {
+
+    padding: 0;
+    margin: 0;
+  }
+
+  i.fa span {
+    font-size: 16px;
+  }
+
+  body * {
+    text-shadow: none;
+  }
+
+
+
+  iframe,
+  input,
+  textarea,
+  button {
+    border: 0;
+  }
+
+  .vid-active {
+    background-color: red;
+  }
 </style>
