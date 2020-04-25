@@ -1,11 +1,11 @@
 <template>
   <v-app id="inspire">
-    <v-content>
+    <v-content class="grey darken-4 ">
       <v-container fluid>
         <v-row>
-          <ContainerFavorite :update-artist="updateArtist"></ContainerFavorite>
+          <ContainerFavorite class="grey darken-4 " :update-artist="updateArtist"></ContainerFavorite>
         </v-row>
-        <v-col>
+        <v-col  class="grey darken-4 text-center">
           <ContainerPlayer :page-token-url="pageTokenUrl"
                            :judul="judul" :channel-title="channelTitle" :view-count="viewCount"
                            :new-published-at="newPublishedAt" :likd="dislikeCount"
@@ -16,7 +16,7 @@
       </v-container>
     </v-content>
     <v-footer app fixed
-              class="font-weight-medium">
+              class="font-weight-medium black">
       <video-player :event-target-index="eventTargetIndex" :youtube_det="youtube_det" :page-token-url="pageTokenUrl"
                     :options="videoOptions"/>
       <ContainerFooter></ContainerFooter>
@@ -24,6 +24,7 @@
   </v-app>
 </template>
 <script>
+
 import ContainerPlayer from "./components/ContainerPlayer";
 import ContainerPlaylist from "./components/ContainerPlaylist";
 import ContainerFavorite from "./components/ContainerFavorite";
@@ -49,7 +50,7 @@ pageToken: "",
 uploadsId: "",
 channels_title: "",
 channelTitle: "",
-channels_name: "808StateOfficial",
+channels_name: "ninofficial",
 channelsHref: "",
 thumbnailUrl: "",
 newPublishedAt: "",
@@ -60,12 +61,16 @@ desc: "",
 judul: "",
 pageTokenUrl: "",
 nextpageToken: '',
-chid: [],
+channelId: [],
 videoList: [],
 videoUploads: [],
 videoOptions: {
-autoplay: true,
-controls: true,
+loadingSpinner: false,
+autoplay: false,
+controlBar:{
+fullscreenToggle: false,
+disablePictureInPicture: true
+},
 sources: [
 {
 src:
@@ -79,17 +84,19 @@ type: "video/youtube"
 mounted() {
 this.$nextTick(function () {
 this.connectYoutube();
+
 });
 
 },
 methods: {
+// 1 connect
 connectYoutube() {
-//this.channels_name = "808StateOfficial"; //example
+//this.channels_name = "massiveattack"; //example
 this.channelsHref = "https://www.youtube.com/user/" + this.channels_name;
 this.channels_title = "jQuery plugin by @bachors";
 this.apikey = "AIzaSyChhn0kj1g-rFE69Gb-lRJgbjwtQyKkjp4"; //YOUR GOOGLE API KEY
 this.initUrl =
-  "https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername=" +
+  "https://www.googleapis.com/youtube/v3/channels?part=contentDetails&snippet&contentOwnerDetails&forUsername=" +
   this.channels_name +
   "&key=" +
   this.apikey;
@@ -99,23 +106,25 @@ axios
   dataType: "json"
   })
   .then(response => {
-  this.videoUploads = response.data.items;
+  this.videoUploads = response.data;
   this.uploadsId =
     response.data.items[0].contentDetails.relatedPlaylists.uploads;
-  this.chid = response.data.items[0].id;
+  this.channelId = response.data.items[0].id;
   this.pageToken = "";
-  //console.log(this.uploadsId);
-  this.youtube_video_list();
+  //this.youtube_video_list();
+  this.youtube_video_list()
+console.log('Video Uploads',this.videoUploads)
   });
 },
+
 youtube_video_list() {
 axios
-  .get(
+ .get(
     "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=" +
-    this.uploadsId +
+   this.uploadsId +
     "&key=" +
-    this.apikey + "&pageToken="
-    // this.pageToken
+   this.apikey + "&pageToken="
+   + this.pageToken
   )
   .then(response => {
   this.nextpageToken = response.data.nextPageToken;
@@ -124,10 +133,9 @@ axios
   this.videoId = response.data.items[0].snippet.resourceId.videoId;
   this.pageTokenUrl = "https://www.youtube.com/embed/g1rz_QXQt34" + this.videoId;
   this.youtube_det(response.data);
-
   });
 },
-
+// detect which video is active abd play it.
 youtube_det() {
 axios
   .get(
@@ -155,6 +163,10 @@ axios
   );
   });
 },
+
+
+
+
 playVideo(event) {
 if (this.activeLink) {
 this.activeLink.classList.remove("vid-active");
@@ -169,7 +181,6 @@ this.activeLink = event.target;
 this.activeLink.previousElementSibling.classList.add("vid-active");
 this.videoAttr = event.target.previousElementSibling.getAttribute("data-vvv");
 this.videoId = event.target.previousElementSibling.getAttribute("data-vvv");
-this.videoIndex = event.target.getAttribute("index");
 this.pageTokenUrl = "https://www.youtube.com/embed/" + this.videoAttr;
 document.getElementById("vid1_youtube_api").src = this.pageTokenUrl + "?controls=0&modestbranding=1&rel=0&showinfo=0&loop=0&fs=0&hl=en&iv_load_policy=1&enablejsapi=1&origin=http%3A%2F%2Flocalhost%3A8080&widgetid=1";
 this.youtube_det();
@@ -224,7 +235,7 @@ return (
 },
 
 
-},
+}
 
 };
 </script>
@@ -239,13 +250,23 @@ return (
     width: 300px;
     background-color: blue;
   }
-
+#vid1{
+  margin-top: 10px;
+}
   .vjs-default-skin.vjs-paused .vjs-big-play-button {
     display: none;
   }
 
   .vjs-default-skin.vjs-paused .vjs-control-bar {
-    display: block;
+    display: flex;
+    width: 600px;
+  }
+  .vjs-default-skin.vjs-has-started .vjs-control-bar {
+
+    visibility: visible !important;
+    opacity: 1 !important;
+
+    background-color: rgba(7, 20, 30, 1) !important;
   }
 
   #app {
@@ -255,6 +276,7 @@ return (
     text-align: center;
     color: #2c3e50;
     margin-top: 60px;
+
   }
 
   /* Custom your style */
@@ -286,4 +308,5 @@ return (
   .vid-active {
     background-color: red;
   }
+
 </style>
