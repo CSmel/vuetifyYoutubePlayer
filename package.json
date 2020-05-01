@@ -10,6 +10,7 @@
   "dependencies": {
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
+    "videojs-wavesurfer": "^2.11.0",
     "videojs-youtube": "^2.6.1",
     "vue": "^2.6.11",
     "vuetify": "^2.2.20"
@@ -22,8 +23,10 @@
     "babel-eslint": "^10.0.3",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.1.2",
+    "prettier": "2.0.5",
     "video.js": "^7.7.5",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.11",
+    "wavesurfer.js": "latest"
   },
   "eslintConfig": {
     "root": true,
