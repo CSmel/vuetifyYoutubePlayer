@@ -1,8 +1,10 @@
 <template>
   <div>
-    {{ this.channels_name }}
-    {{ this.playlistIndex }}
-    <v-card max-width="50%" class="mx-auto">
+    <v-card
+      :fullscreen="$vuetify.breakpoint.xsOnly"
+      max-width="700px"
+      class="mx-auto"
+    >
       <v-app-bar dark color="purple"
         ><br />
         <v-chip color="purple"> Playlist: {{ playlistTitle }} </v-chip>
@@ -33,7 +35,7 @@
 </template>
 <script>
 export default {
-  name: "ContainerPlayer",
+  name: "ContainerPlaylistToolbar",
   comments: {},
   data() {
     return {
@@ -42,24 +44,20 @@ export default {
     };
   },
   props: {
-    channels_name: String,
-    pageTokenUrl: String,
-    title: String,
     playlistTitle: String,
-    channelTitle: String,
-    viewCount: String,
-    newPublishedAt: String,
-    dislikeCount: String,
-    likeCount: String,
-    desc: String,
     playlistIdArray: Array,
   },
   updated() {
     this.$emit("update:playlistIndex", this.playlistIndex);
   },
   watch: {
-    channels_name() {
-      this.playlistIndex = 0;
+    playlistTitle() {
+      this.playClassTotal = document.querySelectorAll(".play");
+      this.eventTargetIndex = Array.from(this.playClassTotal);
+      for (let i = 0; i < this.playClassTotal.length; i++) {
+        this.playClassTotal[i].classList.remove("vid-active");
+        this.playClassTotal[0].classList.add("vid-active");
+      }
     },
   },
   computed: {},

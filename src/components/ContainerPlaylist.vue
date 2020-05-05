@@ -1,6 +1,10 @@
 <template>
   <div>
-    <v-card max-width="50%" class="mx-auto">
+    <v-card
+      :fullscreen="$vuetify.breakpoint.xsOnly"
+      max-width="700px"
+      class="mx-auto"
+    >
       <v-container class="grey darken-4">
         <v-row class="grey darken-4" dense>
           <v-col v-for="(d, index) in videoList" v-bind:key="d.url" cols="12"
@@ -9,7 +13,7 @@
                 Current Video Information
               </v-btn>
             </div>
-            <v-dialog v-model="dialog" max-width="400" :retain-focus="false">
+            <v-dialog v-model="dialog" max-width="600" :retain-focus="false">
               <v-card>
                 <v-card-title class="headline">{{ title }}</v-card-title>
                 <v-card-text>
@@ -25,9 +29,10 @@
                   <div class="">
                     <i class="fa fa-clock-o">
                       <span>{{ newPublishedAt }}</span></i
-                    ><i class="fa fa-thumbs-down pull-right">
-                      {{ dislikeCount }}</i
-                    ><i class="fa fa-thumbs-up pull-right">{{ likeCount }}</i>
+                    ><i class="fa fa-thumbs-down pull-right"
+                      >{{ dislikeCount }} Dislike</i
+                    ><br />
+                    {{ likeCount }}<i class="fa fa-thumbs-up pull-right"></i>
                     <hr />
                     {{ desc }}<br />
                   </div>
@@ -50,7 +55,7 @@
                     v-bind:data-vvv="d.snippet.resourceId.videoId"
                   >
                     <div>
-                      <v-card-title class="headline">
+                      <v-card-title class="subtitle-2">
                         <div :min="d.minute">
                           <div>
                             <span :class="[`vid-tm${index}`]"></span>
@@ -120,11 +125,18 @@ export default {
     playlistTitle: String,
     channelTitle: String,
     viewCount: String,
-    newPublishedAt: String,
     dislikeCount: String,
     likeCount: String,
+    newPublishedAt: String,
+
     desc: String,
   },
+  watch: {
+    playlistTitle() {
+      this.showIndex = 0;
+    },
+  },
+
   updated() {
     this.formatDurationTime();
   },

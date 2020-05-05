@@ -9,20 +9,11 @@
           ></ContainerFavorite>
         </v-row>
         <v-col class="grey darken-4 text-center">
-          <ContainerPlayer
+          <container-playlist-toolbar
             :playlistIndex.sync="appPlaylistIndex"
             :playlistIdArray="playlistIdArray"
-            :page-token-url="pageTokenUrl"
             :playlistTitle="playlistTitle"
-            :title="title"
-            :channel-title="channelTitle"
-            :view-count="viewCount"
-            :new-published-at="newPublishedAt"
-            :likd="dislikeCount"
-            :channels_name="channels_name"
-            :likc="likeCount"
-            :desc="desc"
-          ></ContainerPlayer>
+          ></container-playlist-toolbar>
           <container-playlist
             :visible="visible"
             :playlistIdArray="playlistIdArray"
@@ -31,9 +22,9 @@
             :title="title"
             :channel-title="channelTitle"
             :view-count="viewCount"
+            :dislike-count="dislikeCount"
+            :like-count="likeCount"
             :new-published-at="newPublishedAt"
-            :likd="dislikeCount"
-            :likc="likeCount"
             :desc="desc"
             :play-video="playVideo"
             :channels_title="channels_title"
@@ -44,40 +35,37 @@
       </v-container>
     </v-content>
     <v-footer app fixed class="font-weight-medium black">
-      <video-player
+      <video-player-footer
+        :each-video="eachVideo"
         :event-target-index="eventTargetIndex"
         :youtube_det="youtube_det"
         :page-token-url="pageTokenUrl"
         :options="videoOptions"
       />
-      <ContainerFooter></ContainerFooter>
     </v-footer>
   </v-app>
 </template>
 <script>
-import ContainerPlayer from "./components/ContainerPlayer";
+import ContainerPlaylistToolbar from "./components/ContainerPlaylistToolbar";
 import ContainerPlaylist from "./components/ContainerPlaylist";
 import ContainerFavorite from "./components/ContainerFavorite";
-import ContainerFooter from "./components/ContainerFooter";
-import VideoPlayer from "./components/VideoPlayer.vue";
+import VideoPlayerFooter from "./components/VideoPlayerFooter.vue";
 
 import axios from "axios";
 import videojs from "video.js";
-//import videojs from 'video.js/dist/video.js'
 
 export default {
   name: "App",
   components: {
-    ContainerFooter,
+    ContainerPlaylistToolbar,
     ContainerFavorite,
-    ContainerPlayer,
     ContainerPlaylist,
-    VideoPlayer,
+    VideoPlayerFooter,
   },
   data() {
     return {
       videoId: "ehNXOIpRr6c",
-      appPlaylistIndex: "",
+      appPlaylistIndex: 0,
       eventTargetIndex: 1,
       pageToken: "",
       uploadsId: "",
@@ -90,8 +78,8 @@ export default {
       viewCount: "",
       likeCount: "",
       dislikeCount: "",
+      eachVideo: [],
       desc: "",
-
       title: "",
       playlistTitle: "",
       pageTokenUrl: "",
@@ -127,14 +115,25 @@ export default {
     appPlaylistIndex() {
       this.connectYoutube();
     },
+    playlistTitle() {
+      this.createVideoArray();
+    },
   },
   updated() {},
   mounted() {
     this.$nextTick(function () {
       this.connectYoutube();
+      this.createVideoArray();
     });
   },
   methods: {
+    createVideoArray() {
+      setTimeout(() => {
+        this.eachVideo = Array.prototype.slice.call(this.$el.querySelectorAll(".play"))
+
+        console.log(this.eachVideo);
+      }, 1000);
+    },
     // 1 connect
     connectYoutube() {
       //this.channels_name = "massiveattack"; //example
@@ -196,7 +195,7 @@ export default {
           this.playlistTitle =
             response.data.items[this.appPlaylistIndex].snippet.title;
           this.playListId = response.data.items[this.appPlaylistIndex].id;
-          console.log("Get Playlist Id", this.appPlaylistIndex);
+          console.log("Playlist Title", this.playlistTitle);
 
           this.displayPlayListIdList();
         });
@@ -234,8 +233,9 @@ export default {
         )
         .then((response) => {
           this.viewCount = response.data.items[0].statistics.viewCount;
-          this.likeCount = response.data.items[0].statistics.likeCount;
           this.dislikeCount = response.data.items[0].statistics.dislikeCount;
+
+          this.likeCount = response.data.items[0].statistics.likeCount;
           this.publishedAt = response.data.items[0].snippet.publishedAt;
           //this.category = ""
           this.title = response.data.items[0].snippet.localized.title;
@@ -248,6 +248,7 @@ export default {
           this.newPublishedAt = this.timeSince(
             new Date(this.publishedAt).getTime()
           );
+          console.log("dislike", response.data.items);
         });
     },
 
@@ -273,10 +274,13 @@ export default {
       this.pageTokenUrl = "https://www.youtube.com/embed/" + this.videoAttr;
       //this.youtubeSrc = this.pageTokenUrl + "?controls=0&modestbranding=1&rel=0&showinfo=0&loop=0&fs=0&hl=en&iv_load_policy=1&enablejsapi=1&origin=http%3A%2F%2Flocalhost%3A8080&widgetid=1";
       //document.getElementById("vid1_youtube_api").src = this.pageTokenUrl + "?controls=0&modestbranding=1&rel=0&showinfo=0&loop=0&fs=0&hl=en&iv_load_policy=1&enablejsapi=1&origin=http%3A%2F%2Flocalhost%3A8080&widgetid=1";
-      let ytplayer = videojs("vid1");
-      ytplayer.src({ type: "video/youtube", src: this.pageTokenUrl });
+      this.playYoutubeVideo();
       console.log(this.videoId);
       this.youtube_det();
+    },
+    playYoutubeVideo() {
+      let ytplayer = videojs("vid1");
+      ytplayer.src({ type: "video/youtube", src: this.pageTokenUrl });
     },
     updateArtist(event) {
       this.channels_name = event.currentTarget.getAttribute(

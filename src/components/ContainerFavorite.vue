@@ -51,7 +51,7 @@ export default {
         src:
           "https://yt3.ggpht.com/a/AATXAJxC_8OjSN8NLtxFctXu2X49PSZSqQ_hnCdwmw=s288-c-k-c0xffffffff-no-rj-mo",
 
-        artist: "EricPrydzTV",
+        artist: "Eric Prydz",
         artistChannelName: "EricPrydzTV",
       },
       {
@@ -65,14 +65,14 @@ export default {
         color: "#952175",
         src:
           "https://yt3.ggpht.com/a/AATXAJxtFIhLe_LJoEWGhDBqFsYlnzVzGtHxbSMpDg=s288-c-k-c0xffffffff-no-rj-mo",
-        artist: "Halcyon Days",
+        artist: "KMFDM",
         artistChannelName: "officialkmfdm",
       },
       {
         color: "#952175",
         src:
-          "https://yt3.ggpht.com/a/AATXAJz_Bi93s6_FkisMbGX8lSa5t2RIlExAjE5QPQ=s288-c-k-c0xffffffff-no-rj-mo",
-        artist: "Orbital",
+          "https://yt3.ggpht.com/a/AATXAJxDvHGyUnFvX37aCheQYCCqdJX9vmt3U1hQNg=s176-c-k-c0x00ffffff-no-rj",
+        artist: "808 State",
         artistChannelName: "808StateOfficial",
       },
       {
